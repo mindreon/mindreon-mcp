@@ -34,6 +34,7 @@
   "license": "MIT",
   "scripts": {
     "start": "node src/index.js",
+    "pack": "mkdir -p ./bin && npm pack --pack-destination ./bin",
     "release": "node src/index.js release",
     "release:patch": "node src/index.js release patch",
     "release:minor": "node src/index.js release minor",

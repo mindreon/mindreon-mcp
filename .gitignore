@@ -12,3 +12,5 @@ zentao-mcp
 tmp/
 .tmp/
 .idea
+bin/
+*.tgz

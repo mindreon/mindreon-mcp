@@ -23,6 +23,7 @@ Options:
   -h, --help    Show help message
 
 Example:
+  mindreon login
   mindreon login --username admin --password secret
   mindreon model connect --name example-model --version v1
   mindreon repo add

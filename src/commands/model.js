@@ -72,8 +72,9 @@ export async function runModel({ argv }) {
         });
         console.log(`Connected successfully. FVS ID: ${result.fvsId}`);
         console.log(`Current version: ${result.branch}`);
-        console.log(`Workspace: ${targetDir}`);
-        console.log("Run `mindreon repo pull` when you are ready to fetch remote files.");
+        console.log("Next steps:");
+        console.log(`  cd ${targetDir}`);
+        console.log("  mindreon repo pull");
         return;
     }
 

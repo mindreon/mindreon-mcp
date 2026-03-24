@@ -126,11 +126,11 @@ export async function ensureDvcConfig(cwd, creds, fvsId) {
     const configPath = path.join(cwd, ".dvc", "config");
     const existing = await readIni(configPath);
     const remoteSection = 'remote "storage"';
-    const remoteConfig = { ...(existing[remoteSection] || {}) };
     const bucket = creds.bucket || "";
     const prefix = creds.prefix || fvsId;
+    const remoteConfig = {};
 
-    if (!remoteConfig.url && bucket) {
+    if (bucket) {
         remoteConfig.url = `s3://${bucket}/${prefix}`;
     }
 
@@ -235,11 +235,6 @@ function hasLocalCommits(cwd) {
     return tryCommand("git", ["rev-parse", "--verify", "HEAD"], { cwd }).status === 0;
 }
 
-function hasWorktreeChanges(cwd) {
-    const result = tryCommand("git", ["status", "--porcelain"], { cwd });
-    return result.status === 0 && Boolean((result.stdout || "").trim());
-}
-
 function remoteBranchExists(cwd, branch) {
     return tryCommand("git", ["show-ref", "--verify", "--quiet", `refs/remotes/origin/${branch}`], { cwd }).status === 0;
 }
@@ -250,6 +245,16 @@ function ensureGitRepository(cwd) {
         return;
     }
     runCommand("git", ["init"], { cwd });
+}
+
+function ensureLocalBranch(cwd, branch) {
+    const targetBranch = normalizeBranch(branch) || "main";
+    const currentBranch = (captureCommand("git", ["branch", "--show-current"], { cwd }) || "").trim();
+    if (currentBranch === targetBranch) {
+        return targetBranch;
+    }
+    runCommand("git", ["checkout", "-B", targetBranch], { cwd });
+    return targetBranch;
 }
 
 function setOriginRemote(cwd, gitUrl) {
@@ -281,14 +286,12 @@ function syncRemoteBranch(cwd, branch) {
     const targetBranch = normalizeBranch(branch) || detectDefaultBranch(cwd);
     const fetchResult = tryCommand("git", ["fetch", "origin"], { cwd });
     if (fetchResult.status !== 0 || !remoteBranchExists(cwd, targetBranch)) {
+        ensureLocalBranch(cwd, targetBranch);
         return targetBranch;
     }
 
     if (!hasLocalCommits(cwd)) {
-        if (hasWorktreeChanges(cwd)) {
-            return targetBranch;
-        }
-        runCommand("git", ["checkout", "-B", targetBranch, `origin/${targetBranch}`], { cwd });
+        runCommand("git", ["checkout", "-f", "-B", targetBranch, `origin/${targetBranch}`], { cwd });
         tryCommand("git", ["branch", "--set-upstream-to", `origin/${targetBranch}`, targetBranch], { cwd });
         return targetBranch;
     }
@@ -323,6 +326,7 @@ export function syncWorkspaceBranch(cwd, branch = "") {
 }
 
 export async function connectWorkspace({ cwd, bindType, bindName, version }) {
+    await fs.mkdir(cwd, { recursive: true });
     const safeDir = tryCommand("git", ["config", "--global", "--add", "safe.directory", cwd], { cwd });
     if (safeDir.error) {
         throw safeDir.error;
@@ -339,7 +343,10 @@ export async function connectWorkspace({ cwd, bindType, bindName, version }) {
 
     ensureGitRepository(cwd);
     setOriginRemote(cwd, gitUrl);
-    const resolvedBranch = syncRemoteBranch(cwd, version);
+    const resolvedBranch = ensureLocalBranch(
+        cwd,
+        normalizeBranch(version) || fvsInfo.defaultBranch || "main"
+    );
 
     const dvcDir = path.join(cwd, ".dvc");
     if (!(await pathExists(dvcDir))) {

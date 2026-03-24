@@ -64,12 +64,20 @@ export async function runLogin({ argv }) {
         },
     });
 
-    if (response && response.data && response.data.accessToken) {
-        const token = response.data.accessToken;
+    const token =
+        response?.data?.accessToken ||
+        response?.data?.token ||
+        response?.accessToken ||
+        response?.token ||
+        "";
+
+    if (token) {
         await saveConfig({ token, username, gitAccessToken: "" });
         console.log(`Successfully logged in as ${username}. Token saved to config.`);
     } else {
-        throw new Error("Invalid response format from login API");
+        const payload =
+            typeof response === "string" ? response : JSON.stringify(response, null, 2);
+        throw new Error(`Invalid response format from login API:\n${payload}`);
     }
 }
 

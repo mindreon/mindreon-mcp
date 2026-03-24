@@ -1,4 +1,5 @@
 import { parseArgs } from "../cli/args.js";
+import path from "node:path";
 import { request, resolveBaseUrl } from "../api/client.js";
 import { connectWorkspace } from "../utils/workspace.js";
 import { loadConfig } from "../cli/config.js";
@@ -57,20 +58,23 @@ export async function runDataset({ argv }) {
     if (subCommand === "connect") {
         const datasetName = args.name || args.dataset;
         const version = args.version || args.branch || "";
+        const targetDir = path.resolve(args.dir || path.join(process.cwd(), datasetName));
 
         if (!datasetName) {
-            throw new Error("Usage: mindreon dataset connect --name <name> [--version <version>]");
+            throw new Error("Usage: mindreon dataset connect --name <name> [--version <version>] [--dir <path>]");
         }
 
-        console.log(`Connecting current directory to dataset ${datasetName}${version ? `@${version}` : ""}...`);
+        console.log(`Initializing dataset workspace ${datasetName}${version ? `@${version}` : ""} in ${targetDir}...`);
         const result = await connectWorkspace({
-            cwd: process.cwd(),
+            cwd: targetDir,
             bindType: "dataset",
             bindName: datasetName,
             version,
         });
         console.log(`Connected successfully. FVS ID: ${result.fvsId}`);
         console.log(`Current version: ${result.branch}`);
+        console.log(`Workspace: ${targetDir}`);
+        console.log("Run `mindreon repo pull` when you are ready to fetch remote files.");
         return;
     }
 

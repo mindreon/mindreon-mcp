@@ -18,6 +18,17 @@ function parseValue(raw) {
     return value;
 }
 
+function normalizeSectionName(raw) {
+    const value = String(raw || "").trim();
+    if (
+        (value.startsWith("\"") && value.endsWith("\"")) ||
+        (value.startsWith("'") && value.endsWith("'"))
+    ) {
+        return value.slice(1, -1).trim();
+    }
+    return value;
+}
+
 export async function readIni(filePath) {
     try {
         const content = await fs.readFile(filePath, "utf-8");
@@ -31,7 +42,7 @@ export async function readIni(filePath) {
             }
 
             if (line.startsWith("[") && line.endsWith("]")) {
-                currentSection = line.slice(1, -1).trim();
+                currentSection = normalizeSectionName(line.slice(1, -1));
                 if (!data[currentSection]) {
                     data[currentSection] = {};
                 }
@@ -60,7 +71,7 @@ export async function readIni(filePath) {
 export async function writeIni(filePath, sections) {
     const lines = [];
     for (const [sectionName, sectionValues] of Object.entries(sections)) {
-        lines.push(`[${sectionName}]`);
+        lines.push(`[${normalizeSectionName(sectionName)}]`);
         for (const [key, value] of Object.entries(sectionValues)) {
             lines.push(`${key} = ${normalizeValue(value)}`);
         }

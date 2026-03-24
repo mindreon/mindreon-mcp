@@ -1,6 +1,6 @@
 # Mindreon CLI
 
-Mindreon CLI 提供登录、文件上传、模型与数据集管理、本地 Git/DVC 工作区操作，以及 workload 调度能力。
+Mindreon CLI 提供登录、模型与数据集管理、本地 Git/DVC 工作区操作，以及 workload 调度能力。
 
 ## 安装
 
@@ -31,12 +31,6 @@ mindreon login --username <USERNAME> --password <PASSWORD> [--url https://your-d
 ```
 
 直接执行 `mindreon login` 会进入交互式输入流程。登录成功后，Token 会保存在 `~/.config/mindreon/config.json`。
-
-### 文件上传
-
-```bash
-mindreon file upload <LOCAL_FILE_PATH> --bucket <BUCKET_NAME>
-```
 
 ### 模型管理
 

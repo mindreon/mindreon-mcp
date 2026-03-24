@@ -11,12 +11,11 @@ Usage:
 Commands:
   login         Authenticate with Mindreon IAM service
   install       Install or verify git, git-lfs, and dvc[s3]
-  file          File uploading and management (TUS protocol)
   dataset       Dataset and dataset version management
   model         Model and model version management
   repo          Local Git/DVC workspace operations
   workload      Create and manage training, dev, or inference workloads
-  release       Cut new version, build, and publish to NPM registry
+  release       Maintainer command for CLI versioning and npm release
   help          Show this help message
 
 Options:

@@ -29,6 +29,9 @@ export async function runDataset({ argv }) {
         // Dataset service responds with standard wrapped or direct. Assumed wrapped parsed in client.js
         console.log("Dataset created successfully.");
         console.log(response.data || response);
+        console.log("Next steps:");
+        console.log(`  mindreon dataset version create --name "${name}" --version "main"`);
+        console.log(`  mindreon dataset connect --name "${name}" --version "main"`);
         return;
     }
 
@@ -52,6 +55,8 @@ export async function runDataset({ argv }) {
 
         console.log("Dataset version created successfully.");
         console.log(response.data || response);
+        console.log("Next steps:");
+        console.log(`  mindreon dataset connect --name "${datasetName}" --version "${version}"`);
         return;
     }
 

@@ -28,6 +28,9 @@ export async function runModel({ argv }) {
 
         console.log("Model created successfully.");
         console.log(response.data || response);
+        console.log("Next steps:");
+        console.log(`  mindreon model version create --name "${name}" --version "main"`);
+        console.log(`  mindreon model connect --name "${name}" --version "main"`);
         return;
     }
 
@@ -51,6 +54,8 @@ export async function runModel({ argv }) {
 
         console.log("Model version created successfully.");
         console.log(response.data || response);
+        console.log("Next steps:");
+        console.log(`  mindreon model connect --name "${modelName}" --version "${version}"`);
         return;
     }
 

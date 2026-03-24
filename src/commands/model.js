@@ -16,7 +16,7 @@ export async function runModel({ argv }) {
         const description = args.description || "";
 
         if (!name) {
-            throw new Error("Usage: mindreon-mcp model create --name <name> [--displayName <name>] [--description <desc>]");
+            throw new Error("Usage: mindreon model create --name <name> [--displayName <name>] [--description <desc>]");
         }
 
         console.log(`Creating model: ${name}`);
@@ -36,7 +36,7 @@ export async function runModel({ argv }) {
         const baseBranch = args.base || args.baseBranch || "";
 
         if (!modelName || !version) {
-            throw new Error("Usage: mindreon-mcp model version create --name <name> --version <version> [--base <branch>]");
+            throw new Error("Usage: mindreon model version create --name <name> --version <version> [--base <branch>]");
         }
 
         console.log(`Creating version ${version} for model ${modelName}`);
@@ -58,7 +58,7 @@ export async function runModel({ argv }) {
         const version = args.version || args.branch || "";
 
         if (!modelName) {
-            throw new Error("Usage: mindreon-mcp model connect --name <name> [--version <version>]");
+            throw new Error("Usage: mindreon model connect --name <name> [--version <version>]");
         }
 
         console.log(`Connecting current directory to model ${modelName}${version ? `@${version}` : ""}...`);

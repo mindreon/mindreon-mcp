@@ -304,7 +304,7 @@ function syncRemoteBranch(cwd, branch) {
             `origin/${targetBranch}`,
             "--allow-unrelated-histories",
             "-m",
-            `Merge remote branch '${targetBranch}' via mindreon-mcp connect`,
+            `Merge remote branch '${targetBranch}' via mindreon connect`,
         ],
         { cwd }
     );

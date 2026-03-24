@@ -89,7 +89,7 @@ export async function runRepo({ argv }) {
     if (subCommand === "commit") {
         const message = args.message || args.m;
         if (!message) {
-            throw new Error("Usage: mindreon-mcp repo commit -m <message>");
+            throw new Error("Usage: mindreon repo commit -m <message>");
         }
         await ensureGitIdentity(cwd);
         runCommand("git", ["commit", "-m", message], { cwd });

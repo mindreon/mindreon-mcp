@@ -39,7 +39,7 @@ export async function runFile({ argv }) {
         const filesPrefix = getServicePrefix("files", resolveBaseUrl(config));
 
         if (!filePath) {
-            throw new Error("Usage: mindreon-mcp file upload <file_path> [--bucket <bucket>]");
+            throw new Error("Usage: mindreon file upload <file_path> [--bucket <bucket>]");
         }
 
         const stat = await fs.stat(filePath);

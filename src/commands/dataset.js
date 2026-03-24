@@ -16,7 +16,7 @@ export async function runDataset({ argv }) {
         const description = args.description || "";
 
         if (!name) {
-            throw new Error("Usage: mindreon-mcp dataset create --name <name> [--displayName <name>] [--description <desc>]");
+            throw new Error("Usage: mindreon dataset create --name <name> [--displayName <name>] [--description <desc>]");
         }
 
         console.log(`Creating dataset: ${name}`);
@@ -37,7 +37,7 @@ export async function runDataset({ argv }) {
         const baseBranch = args.base || args.baseBranch || "main";
 
         if (!datasetName || !version) {
-            throw new Error("Usage: mindreon-mcp dataset version create --name <name> --version <version> [--base <branch>]");
+            throw new Error("Usage: mindreon dataset version create --name <name> --version <version> [--base <branch>]");
         }
 
         console.log(`Creating version ${version} for dataset ${datasetName}`);
@@ -59,7 +59,7 @@ export async function runDataset({ argv }) {
         const version = args.version || args.branch || "";
 
         if (!datasetName) {
-            throw new Error("Usage: mindreon-mcp dataset connect --name <name> [--version <version>]");
+            throw new Error("Usage: mindreon dataset connect --name <name> [--version <version>]");
         }
 
         console.log(`Connecting current directory to dataset ${datasetName}${version ? `@${version}` : ""}...`);

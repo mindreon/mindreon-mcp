@@ -13,7 +13,7 @@ export async function runLogin({ argv }) {
 
     if (!username || !password) {
         throw new Error(
-            "Missing required arguments. Usage: mindreon-mcp login --username <user> --password <pass>"
+            "Missing required arguments. Usage: mindreon login --username <user> --password <pass>"
         );
     }
 

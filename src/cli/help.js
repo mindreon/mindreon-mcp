@@ -6,7 +6,7 @@ Mindreon MCP CLI
 A command-line interface for Mindreon AI platform workflows.
 
 Usage:
-  mindreon-mcp <command> [options]
+  mindreon <command> [options]
 
 Commands:
   login         Authenticate with Mindreon IAM service
@@ -23,16 +23,16 @@ Options:
   -h, --help    Show help message
 
 Example:
-  mindreon-mcp login --username admin --password secret
-  mindreon-mcp model connect --name example-model --version v1
-  mindreon-mcp repo add
-  mindreon-mcp repo add --threshold 5
+  mindreon login --username admin --password secret
+  mindreon model connect --name example-model --version v1
+  mindreon repo add
+  mindreon repo add --threshold 5
 `);
 }
 
 export function printReleaseHelp() {
   process.stdout.write(`
-Usage: mindreon-mcp release [patch|minor|major] [options]
+Usage: mindreon release [patch|minor|major] [options]
 
 Options:
   --yes                  Skip confirmation prompts

@@ -2,7 +2,7 @@ import process from "node:process";
 
 export function printRepoHelp() {
     process.stdout.write(`
-Usage: mindreon-mcp repo <command> [options]
+Usage: mindreon repo <command> [options]
 
 Commands:
   status                        Show current workspace binding and git/dvc status

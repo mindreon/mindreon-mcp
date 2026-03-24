@@ -19,7 +19,7 @@ export async function getMindreonContext() {
 export async function ensureLoggedIn() {
     const context = await getMindreonContext();
     if (!context.token) {
-        throw new Error("Not logged in. Please run 'mindreon-mcp login' first.");
+        throw new Error("Not logged in. Please run 'mindreon login' first.");
     }
     return context;
 }

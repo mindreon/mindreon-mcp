@@ -1,11 +1,10 @@
 {
   "name": "@sanmu2018/mindreon-mcp",
   "version": "0.1.0",
-  "description": "Mindreon CLI for AI Agent MCP workflows",
+  "description": "Mindreon CLI for local Git/DVC, model, dataset, and workload workflows",
   "type": "module",
   "bin": {
-    "mindreon": "src/index.js",
-    "mindreon-mcp": "src/index.js"
+    "mindreon": "src/index.js"
   },
   "files": [
     "src",
@@ -17,8 +16,22 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mindreon/mindreon-mcp"
+    "url": "git+https://github.com/mindreon/mindreon-mcp.git"
   },
+  "homepage": "https://github.com/mindreon/mindreon-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/mindreon/mindreon-mcp/issues"
+  },
+  "keywords": [
+    "mindreon",
+    "cli",
+    "git",
+    "dvc",
+    "model",
+    "dataset",
+    "mcp"
+  ],
+  "license": "MIT",
   "scripts": {
     "start": "node src/index.js",
     "release": "node src/index.js release",

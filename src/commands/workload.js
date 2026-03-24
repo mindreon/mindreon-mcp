@@ -18,7 +18,7 @@ export async function runWorkload({ argv }) {
 
     if (subCommand === "create-training") {
         const name = args.name;
-        if (!name) throw new Error("Usage: mindreon-mcp workload create-training --name <name> [options]");
+        if (!name) throw new Error("Usage: mindreon workload create-training --name <name> [options]");
 
         const body = {
             name: name,
@@ -49,7 +49,7 @@ export async function runWorkload({ argv }) {
 
     if (subCommand === "create-dev") {
         const name = args.name;
-        if (!name) throw new Error("Usage: mindreon-mcp workload create-dev --name <name> [options]");
+        if (!name) throw new Error("Usage: mindreon workload create-dev --name <name> [options]");
 
         const body = {
             name: name,
@@ -70,7 +70,7 @@ export async function runWorkload({ argv }) {
 
     if (subCommand === "create-infer") {
         const name = args.name;
-        if (!name) throw new Error("Usage: mindreon-mcp workload create-infer --name <name> --model <model> --modelVersion <version> [options]");
+        if (!name) throw new Error("Usage: mindreon workload create-infer --name <name> --model <model> --modelVersion <version> [options]");
 
         const body = {
             name: name,

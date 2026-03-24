@@ -12,16 +12,18 @@ export async function runLogin({ argv }) {
 
     let username = args.username || args.u;
     let password = args.password || args.p;
-    // IAM API URL or custom setup
-    let url = args.url || configuredUrl;
+    let url = args.url || "";
 
     if ((!username || !password) && !process.stdin.isTTY) {
         throw new Error("Missing required arguments. Usage: mindreon login --username <user> --password <pass>");
     }
 
     if (process.stdin.isTTY) {
-        if (!url) {
-            url = await prompt("API URL", "https://dev-4-13.mindreon.com");
+        if (!args.url) {
+            url = await prompt("API URL");
+            if (!url) {
+                throw new Error("API URL is required.");
+            }
         }
         if (!username) {
             username = await prompt("Username");
@@ -33,6 +35,10 @@ export async function runLogin({ argv }) {
 
     if (!username || !password) {
         throw new Error("Username and password are required.");
+    }
+
+    if (!url) {
+        url = configuredUrl;
     }
 
     // Save custom URL if provided, so subsequent commands use it

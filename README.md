@@ -30,8 +30,6 @@ mindreon login
 mindreon login --username <USERNAME> --password <PASSWORD> [--url https://your-domain]
 ```
 
-直接执行 `mindreon login` 会进入交互式输入流程。登录成功后，Token 会保存在 `~/.config/mindreon/config.json`。
-
 ### 模型管理
 
 ```bash

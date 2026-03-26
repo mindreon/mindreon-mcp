@@ -96,6 +96,25 @@ mindreon install
 - `python3`
 - `python3-pip`
 - `dvc[s3]`
+- `skopeo`（可选，用于镜像转推）
+
+如果你不想安装 `skopeo`，可以跳过：
+
+```bash
+mindreon install --skip-skopeo
+```
+
+镜像转推示例：
+
+```bash
+mindreon image docker.io/library/nginx:latest harbor.example.com/demo/nginx:latest
+```
+
+也支持显式写法：
+
+```bash
+mindreon image push --from docker.io/library/nginx:latest --to harbor.example.com/demo/nginx:latest
+```
 
 说明：
 
@@ -239,12 +258,15 @@ mindreon repo add
 说明：
 
 - 默认超过 `5 MiB` 的文件会自动走 `dvc add`
+- 如果本次待跟踪文件总数超过 `2000`，会优先对最顶层的未追踪目录执行 `dvc add`
 - 小文件会正常进入 Git
 - 如果看到新生成的 `.dvc` 文件，请一并提交，不要删除
 - 也可以手动指定阈值：
 
 ```bash
 mindreon repo add --threshold 1
+mindreon repo add --count-threshold 5000
+mindreon repo add --threshold 1 --count-threshold 5000
 ```
 
 ## 第七步：提交代码

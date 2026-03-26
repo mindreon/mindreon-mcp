@@ -15,6 +15,7 @@ Commands:
   model         Model and model version management
   repo          Local Git/DVC workspace operations
   workload      Create and manage training, dev, or inference workloads
+  image         Copy or push images between registries
   release       Maintainer command for CLI versioning and npm release
   help          Show this help message
 
@@ -27,6 +28,31 @@ Example:
   mindreon model connect --name example-model --version v1
   mindreon repo add
   mindreon repo add --threshold 5
+  mindreon image push docker.io/library/nginx:latest harbor.example.com/demo/nginx:latest
+`);
+}
+
+export function printImageHelp() {
+  process.stdout.write(`
+Usage: mindreon image <src> <dst> [options]
+       mindreon image push <src> <dst> [options]
+       mindreon image push --from <src> --to <dst> [options]
+
+Commands:
+  push                           Copy or push an image from src to dst
+
+Options:
+  --from <src>                   Source image reference
+  --to <dst>                     Destination image reference
+  --src-tls-verify <bool>        Verify source registry TLS (default: false)
+  --dest-tls-verify <bool>       Verify destination registry TLS (default: false)
+  --dry-run                      Print the skopeo command without executing it
+  -h, --help                     Show this help message
+
+Examples:
+  mindreon image docker.io/library/nginx:latest harbor.example.com/demo/nginx:latest
+  mindreon image push docker.io/library/nginx:latest harbor.example.com/demo/nginx:latest
+  mindreon image push --from quay.io/prometheus/prometheus:v2.54.1 --to harbor.example.com/ops/prometheus:v2.54.1
 `);
 }
 
@@ -62,10 +88,11 @@ Examples:
 
 export function printInstallHelp() {
   process.stdout.write(`
-Usage: mindreon install [--check]
+Usage: mindreon install [--check] [--skip-skopeo]
 
 Options:
   --check                Only print dependency status, do not install
+  --skip-skopeo          Do not install optional skopeo
   -h, --help             Show this help message
 `);
 }

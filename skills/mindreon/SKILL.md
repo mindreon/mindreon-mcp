@@ -56,9 +56,20 @@ mindreon dataset connect --name "my-test-data" --version "v1"
 连接成功后，在本地目录中执行：
 ```bash
 mindreon repo pull
-mindreon repo add                # 默认超过 5 MiB 走 dvc add
+mindreon repo add                # 默认文件数超过 2000 时优先对顶层未追踪目录做 dvc add，否则单文件超过 5 MiB 走 dvc add
 mindreon repo commit -m "update assets"
 mindreon repo push
+```
+
+如果需要自定义阈值：
+```bash
+mindreon repo add --threshold 10 --count-threshold 5000
+```
+
+如果需要把镜像从一个仓库推到另一个仓库：
+```bash
+mindreon image <SRC_IMAGE> <DST_IMAGE>
+mindreon image push --from <SRC_IMAGE> --to <DST_IMAGE>
 ```
 
 ### 5. 任务调度 (Workload: AI Nexus)

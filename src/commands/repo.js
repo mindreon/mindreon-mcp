@@ -1,13 +1,12 @@
 import process from "node:process";
 import { parseArgs } from "../cli/args.js";
 import {
-    collectTrackedCandidates,
     ensureGitIdentity,
     getCurrentBranch,
+    planTrackingPaths,
     readWorkspaceConfig,
     refreshWorkspaceCredentials,
     refreshWorkspaceGitRemote,
-    splitTrackingPaths,
     syncWorkspaceBranch,
 } from "../utils/workspace.js";
 import { runCommand, captureCommand, tryCommand } from "../utils/shell.js";
@@ -70,9 +69,25 @@ export async function runRepo({ argv }) {
 
     if (subCommand === "add") {
         const thresholdMb = args.threshold || args.thresholdMb || process.env.MINDREON_DVC_THRESHOLD_MB || "";
+        const fileCountThreshold =
+            args["count-threshold"] ||
+            args.countThreshold ||
+            args["file-count-threshold"] ||
+            args.fileCountThreshold ||
+            process.env.MINDREON_DVC_FILE_COUNT_THRESHOLD ||
+            "";
         const explicitPaths = args._.slice(1);
-        const candidatePaths = await collectTrackedCandidates(cwd, explicitPaths);
-        const { dvcPaths, thresholdMb: resolvedThresholdMb } = await splitTrackingPaths(cwd, candidatePaths, thresholdMb);
+        const {
+            candidatePaths,
+            dvcPaths,
+            directoryDvcPaths,
+            fileDvcPaths,
+            thresholdMb: resolvedThresholdMb,
+            fileCountThreshold: resolvedFileCountThreshold,
+        } = await planTrackingPaths(cwd, explicitPaths, {
+            thresholdMb,
+            fileCountThreshold,
+        });
 
         for (const filePath of dvcPaths) {
             runCommand("dvc", ["add", filePath], { cwd });
@@ -80,8 +95,9 @@ export async function runRepo({ argv }) {
 
         const gitAddArgs = explicitPaths.length > 0 ? ["add", "-A", "--", ...explicitPaths] : ["add", "-A"];
         runCommand("git", gitAddArgs, { cwd });
+        const directoryLabel = directoryDvcPaths.length === 1 ? "directory" : "directories";
         console.log(
-            `Tracked ${candidatePaths.length} file(s). ${dvcPaths.length} file(s) exceeded ${resolvedThresholdMb} MiB and were added via DVC.`
+            `Tracked ${candidatePaths.length} file(s). ${directoryDvcPaths.length} ${directoryLabel} exceeded the ${resolvedFileCountThreshold} file threshold and ${fileDvcPaths.length} file(s) exceeded ${resolvedThresholdMb} MiB; ${dvcPaths.length} path(s) were added via DVC.`
         );
         return;
     }

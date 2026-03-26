@@ -7,7 +7,9 @@ import { captureCommand, runCommand, tryCommand } from "./shell.js";
 import { loadConfig } from "../cli/config.js";
 
 const INTERNAL_DIRS = new Set([".git", ".dvc"]);
+const ALWAYS_GIT_TRACK_FILES = new Set([".dvcignore", ".gitignore", ".gitattributes", ".gitmodules"]);
 const DEFAULT_THRESHOLD_MB = 5;
+const DEFAULT_FILE_COUNT_THRESHOLD = 2000;
 
 function normalizeBranch(value) {
     return (value || "").trim();
@@ -29,6 +31,16 @@ async function pathExists(targetPath) {
     } catch {
         return false;
     }
+}
+
+function isInternalPath(relativePath) {
+    const [firstSegment] = String(relativePath || "").split(path.sep);
+    return INTERNAL_DIRS.has(firstSegment);
+}
+
+function shouldAlwaysGitTrack(relativePath) {
+    const baseName = path.basename(relativePath);
+    return ALWAYS_GIT_TRACK_FILES.has(baseName) || baseName.endsWith(".dvc");
 }
 
 function normalizeDvcEndpointUrl(rawUrl) {
@@ -60,6 +72,20 @@ export function parseThresholdMb(value) {
     const parsed = Number(raw);
     if (!Number.isFinite(parsed) || parsed < 0) {
         throw new Error("Threshold must be a non-negative number.");
+    }
+
+    return parsed;
+}
+
+export function parseFileCountThreshold(value) {
+    const raw = String(value || "").trim();
+    if (!raw) {
+        return DEFAULT_FILE_COUNT_THRESHOLD;
+    }
+
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed < 0 || !Number.isInteger(parsed)) {
+        throw new Error("File count threshold must be a non-negative integer.");
     }
 
     return parsed;
@@ -402,50 +428,159 @@ function parseGitStatusLine(line) {
     if (!line.trim()) {
         return null;
     }
+    const code = line.slice(0, 2);
     const payload = line.slice(3).trim();
     if (!payload) {
         return null;
     }
     if (payload.includes(" -> ")) {
-        return payload.split(" -> ").pop().trim();
+        return {
+            code,
+            path: payload.split(" -> ").pop().trim(),
+        };
     }
-    return payload;
+    return {
+        code,
+        path: payload,
+    };
 }
 
-async function getChangedPaths(cwd) {
+async function getChangedEntries(cwd) {
     const result = captureCommand("git", ["status", "--porcelain"], { cwd });
     const lines = result ? result.split(/\r?\n/) : [];
-    const paths = [];
+    const entries = [];
     for (const line of lines) {
         const parsed = parseGitStatusLine(line);
         if (parsed) {
-            paths.push(parsed);
+            entries.push({
+                code: parsed.code,
+                path: path.relative(cwd, path.resolve(cwd, parsed.path)),
+            });
         }
     }
-    return paths;
+    return entries;
 }
 
-export async function collectTrackedCandidates(cwd, explicitPaths) {
+async function getChangedPaths(cwd) {
+    const entries = await getChangedEntries(cwd);
+    return entries.map((entry) => entry.path);
+}
+
+async function normalizeCandidateInputs(cwd, explicitPaths) {
     const candidates = explicitPaths.length > 0 ? explicitPaths : await getChangedPaths(cwd);
-    const expanded = new Set();
+    const normalized = new Set();
 
     for (const candidate of candidates) {
-        const normalized = candidate.trim();
-        if (!normalized) {
+        const value = String(candidate || "").trim();
+        if (!value) {
             continue;
         }
 
-        const absolutePath = path.resolve(cwd, normalized);
+        const absolutePath = path.resolve(cwd, value);
         if (!(await pathExists(absolutePath))) {
             continue;
         }
+        const relativePath = path.relative(cwd, absolutePath);
+        if (isInternalPath(relativePath)) {
+            continue;
+        }
 
-        for (const filePath of await expandCandidatePath(cwd, normalized)) {
+        normalized.add(relativePath);
+    }
+
+    return Array.from(normalized).sort();
+}
+
+export async function collectTrackedCandidates(cwd, explicitPaths) {
+    const candidates = await normalizeCandidateInputs(cwd, explicitPaths);
+    const expanded = new Set();
+
+    for (const candidate of candidates) {
+        for (const filePath of await expandCandidatePath(cwd, candidate)) {
             expanded.add(filePath);
         }
     }
 
     return Array.from(expanded).sort();
+}
+
+function pathDepth(relativePath) {
+    return relativePath.split(path.sep).filter(Boolean).length;
+}
+
+function isSameOrChildPath(parentPath, candidatePath) {
+    return candidatePath === parentPath || candidatePath.startsWith(`${parentPath}${path.sep}`);
+}
+
+async function collectDirectoryCandidates(cwd, candidateInputs, explicitPaths) {
+    const explicitMode = explicitPaths.length > 0;
+    const changedEntryMap = explicitMode
+        ? new Map()
+        : new Map((await getChangedEntries(cwd)).map((entry) => [entry.path, entry.code]));
+    const directories = [];
+
+    for (const candidate of candidateInputs) {
+        const absolutePath = path.resolve(cwd, candidate);
+        const stat = await fs.stat(absolutePath);
+        if (!stat.isDirectory()) {
+            continue;
+        }
+
+        if (!explicitMode && changedEntryMap.get(candidate) !== "??") {
+            continue;
+        }
+
+        directories.push(candidate);
+    }
+
+    directories.sort((left, right) => {
+        const depthDiff = pathDepth(left) - pathDepth(right);
+        return depthDiff !== 0 ? depthDiff : left.localeCompare(right);
+    });
+
+    const selected = [];
+    for (const directory of directories) {
+        if (selected.some((existing) => isSameOrChildPath(existing, directory))) {
+            continue;
+        }
+        selected.push(directory);
+    }
+
+    return selected;
+}
+
+export async function planTrackingPaths(cwd, explicitPaths, options = {}) {
+    const candidateInputs = await normalizeCandidateInputs(cwd, explicitPaths);
+    const candidatePaths = await collectTrackedCandidates(cwd, explicitPaths);
+    const fileCountThreshold = parseFileCountThreshold(options.fileCountThreshold);
+    const directoryDvcPaths =
+        candidatePaths.length > fileCountThreshold
+            ? await collectDirectoryCandidates(cwd, candidateInputs, explicitPaths)
+            : [];
+
+    const coveredPaths = new Set();
+    for (const directoryPath of directoryDvcPaths) {
+        for (const filePath of await expandCandidatePath(cwd, directoryPath)) {
+            coveredPaths.add(filePath);
+        }
+    }
+
+    const remainingPaths = candidatePaths.filter((filePath) => !coveredPaths.has(filePath));
+    const {
+        dvcPaths: fileDvcPaths,
+        gitPaths,
+        thresholdMb,
+    } = await splitTrackingPaths(cwd, remainingPaths, options.thresholdMb);
+
+    return {
+        candidatePaths,
+        directoryDvcPaths,
+        fileDvcPaths,
+        dvcPaths: [...directoryDvcPaths, ...fileDvcPaths],
+        gitPaths,
+        thresholdMb,
+        fileCountThreshold,
+    };
 }
 
 export async function splitTrackingPaths(cwd, pathsToCheck, thresholdMb) {
@@ -454,6 +589,10 @@ export async function splitTrackingPaths(cwd, pathsToCheck, thresholdMb) {
     const gitPaths = [];
 
     for (const relativePath of pathsToCheck) {
+        if (shouldAlwaysGitTrack(relativePath)) {
+            gitPaths.push(relativePath);
+            continue;
+        }
         const stat = await fs.stat(path.join(cwd, relativePath));
         if (!stat.isFile()) {
             continue;

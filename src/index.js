@@ -3,6 +3,7 @@ import process from "node:process";
 import { extractCommand, hasHelpFlag } from "./cli/args.js";
 import {
     printDatasetHelp,
+    printImageHelp,
     printInstallHelp,
     printLoginHelp,
     printModelHelp,
@@ -18,6 +19,7 @@ import { runRepo } from "./commands/repo.js";
 import { printRepoHelp } from "./commands/repo-help.js";
 import { runWorkload } from "./commands/workload.js";
 import { runRelease } from "./commands/release.js";
+import { runImage } from "./commands/image.js";
 
 const argv = process.argv.slice(2);
 
@@ -41,6 +43,7 @@ function printCommandHelp(command) {
     if (command === "model") return printModelHelp();
     if (command === "repo") return printRepoHelp();
     if (command === "workload") return printWorkloadHelp();
+    if (command === "image") return printImageHelp();
     if (command === "release") return printReleaseHelp();
     return printRootHelp();
 }
@@ -102,6 +105,15 @@ try {
             process.exit(0);
         }
         await runRepo({ argv: argvWithoutCommand, env: process.env });
+        process.exit(0);
+    }
+
+    if (command === "image") {
+        if (argvWithoutCommand.length === 0 || hasHelpFlag(argvWithoutCommand)) {
+            printImageHelp();
+            process.exit(0);
+        }
+        await runImage({ argv: argvWithoutCommand, env: process.env });
         process.exit(0);
     }
 

@@ -18,6 +18,10 @@ function hasPipForPython3() {
     return tryCommand("python3", ["-m", "pip", "--version"]).status === 0;
 }
 
+function hasSkopeo() {
+    return commandExists("skopeo");
+}
+
 function getInstallPrefix() {
     const uid = typeof process.getuid === "function" ? process.getuid() : null;
     if (uid === 0 || process.platform === "darwin") {
@@ -53,17 +57,22 @@ function detectPackageManager() {
 
 function getStatusRows() {
     return [
-        ["git", commandExists("git")],
-        ["git-lfs", hasGitLfs()],
-        ["python3", hasPython3()],
-        ["python3-pip", hasPipForPython3()],
-        ["dvc", hasDvc()],
+        { name: "git", installed: commandExists("git"), optional: false },
+        { name: "git-lfs", installed: hasGitLfs(), optional: false },
+        { name: "python3", installed: hasPython3(), optional: false },
+        { name: "python3-pip", installed: hasPipForPython3(), optional: false },
+        { name: "dvc", installed: hasDvc(), optional: false },
+        { name: "skopeo", installed: hasSkopeo(), optional: true },
     ];
 }
 
 function printStatus() {
-    for (const [name, installed] of getStatusRows()) {
-        console.log(`${installed ? "OK" : "MISSING"}  ${name}`);
+    for (const { name, installed, optional } of getStatusRows()) {
+        if (installed) {
+            console.log(`OK  ${name}${optional ? " (optional)" : ""}`);
+            continue;
+        }
+        console.log(`${optional ? "OPTIONAL" : "MISSING"}  ${name}`);
     }
 }
 
@@ -127,6 +136,8 @@ function installDvc() {
 export async function runInstall({ argv }) {
     const args = parseArgs(argv);
     const checkOnly = Boolean(args.check);
+    const skipSkopeo = Boolean(args["skip-skopeo"]);
+    const packageManager = detectPackageManager();
 
     printStatus();
     if (checkOnly) {
@@ -141,7 +152,6 @@ export async function runInstall({ argv }) {
 
     if (missingSystemPackages.length > 0) {
         console.log(`Installing missing system packages: ${missingSystemPackages.join(", ")}`);
-        const packageManager = detectPackageManager();
         installSystemPackages(packageManager, missingSystemPackages);
     } else {
         console.log("All required system packages are already installed.");
@@ -160,6 +170,25 @@ export async function runInstall({ argv }) {
 
     if (commandExists("git")) {
         runCommand("git", ["lfs", "install"]);
+    }
+
+    if (skipSkopeo) {
+        console.log("Skipping optional skopeo installation.");
+    } else if (hasSkopeo()) {
+        console.log("skopeo is already installed.");
+    } else {
+        console.log("Installing optional package: skopeo...");
+        try {
+            installSystemPackages(packageManager, ["skopeo"]);
+            if (hasSkopeo()) {
+                console.log("skopeo installation completed.");
+            } else {
+                console.log("Warning: skopeo install command completed but skopeo is still unavailable.");
+            }
+        } catch (error) {
+            const message = error?.message || String(error);
+            console.log(`Warning: failed to install optional skopeo. ${message}`);
+        }
     }
 
     console.log("Current dependency status:");

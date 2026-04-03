@@ -10,7 +10,6 @@ import {
     printLoginHelp,
     printReleaseHelp,
     printRootHelp,
-    printWorkloadHelp,
 } from "./cli/help.js";
 import { runConnect } from "./commands/connect.js";
 import { runCreate } from "./commands/create.js";
@@ -19,7 +18,6 @@ import { runLogin } from "./commands/login.js";
 import { runInstall } from "./commands/install.js";
 import { runRepo } from "./commands/repo.js";
 import { printRepoHelp } from "./commands/repo-help.js";
-import { runWorkload } from "./commands/workload.js";
 import { runRelease } from "./commands/release.js";
 import { runImage } from "./commands/image.js";
 
@@ -45,7 +43,6 @@ function printCommandHelp(command) {
     if (command === "connect") return printConnectHelp();
     if (command === "download") return printDownloadHelp();
     if (command === "repo") return printRepoHelp();
-    if (command === "workload") return printWorkloadHelp();
     if (command === "image") return printImageHelp();
     if (command === "release") return printReleaseHelp();
     return printRootHelp();
@@ -99,15 +96,6 @@ try {
             process.exit(0);
         }
         await runDownload({ argv: argvWithoutCommand, env: process.env });
-        process.exit(0);
-    }
-
-    if (command === "workload") {
-        if (argvWithoutCommand.length === 0 || hasHelpFlag(argvWithoutCommand)) {
-            printWorkloadHelp();
-            process.exit(0);
-        }
-        await runWorkload({ argv: argvWithoutCommand, env: process.env });
         process.exit(0);
     }
 

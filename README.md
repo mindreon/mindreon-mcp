@@ -405,10 +405,3 @@ mindreon connect --help
 mindreon download --help
 mindreon repo --help
 ```
-
-任务调度：
-
-```bash
-mindreon workload create-infer --name "infer-test" --model "my-model" --modelVersion "v1" --cpu 4 --memory "8G" --gpu 1
-mindreon workload create-training --name "train-test" --dataset "my-dataset" --datasetVersion "v1" --pretrainModel "my-model" --pretrainModelVersion "v1" --cpu 4 --memory "16G" --gpu 1
-```

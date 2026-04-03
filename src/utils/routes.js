@@ -77,9 +77,6 @@ export function getServicePrefix(serviceName, baseUrl) {
     if (serviceName === "model") {
         return "/model-service";
     }
-    if (serviceName === "workload") {
-        return "/ai-nexus";
-    }
 
     return "";
 }

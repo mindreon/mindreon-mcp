@@ -15,7 +15,6 @@ Commands:
   connect       Initialize a local model or dataset workspace
   download      Create a workspace directory and pull remote content
   repo          Local Git/DVC workspace operations
-  workload      Create and manage training, dev, or inference workloads
   image         Copy or push images between registries
   release       Maintainer command for CLI versioning and npm release
   help          Show this help message
@@ -171,22 +170,5 @@ Options:
   --check                Only print dependency status, do not install
   --skip-skopeo          Do not install optional skopeo
   -h, --help             Show this help message
-`);
-}
-
-export function printWorkloadHelp() {
-  process.stdout.write(`
-Usage: mindreon workload <command> [options]
-
-Commands:
-  create-training                Create a training workload
-  create-dev                     Create a dev workload
-  create-infer                   Create an inference workload
-  list                           List workloads
-
-Examples:
-  mindreon workload create-training --name train-demo --dataset my-dataset --datasetVersion v1
-  mindreon workload create-infer --name infer-demo --model my-model --modelVersion v1
-  mindreon workload list --kind Job
 `);
 }

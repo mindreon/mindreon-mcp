@@ -313,30 +313,6 @@ mindreon repo push
 - 执行 `dvc push`
 - 执行 `git push`
 
-## 内网与缓存配置
-
-如果是在 Kubernetes 集群内通过 service 地址访问，可以按需注入这些环境变量：
-
-```bash
-export MINDREON_IAM_URL="http://iam-service.default.svc.cluster.local:80"
-export MINDREON_FVM_URL="http://file-version-manager.default.svc.cluster.local:80"
-export MINDREON_FVM_EXTERNAL="false"
-```
-
-如果需要复用共享 DVC cache，可以配置：
-
-```bash
-export MINDREON_DVC_CACHE_DIR="/data/dvc-cache"
-export MINDREON_DVC_CACHE_TYPE="symlink,copy"
-```
-
-说明：
-
-- `MINDREON_IAM_URL` 用于 `mindreon login`
-- `MINDREON_FVM_URL` 用于 `download/connect/repo pull/push` 等 FVM 相关流程
-- `MINDREON_FVM_EXTERNAL=false` 会让 CLI 明确请求内网 S3 endpoint
-- `MINDREON_DVC_CACHE_TYPE` 默认是 `copy`，embedding 这类只读模型场景建议用 `symlink,copy`
-
 ## 一次完整示例
 
 下面是一套最常见的模型协作流程：
@@ -369,6 +345,51 @@ mindreon repo add
 mindreon repo commit -m "update note"
 mindreon repo push
 ```
+
+### 同步其他模型仓库示例
+
+如果你要把其他模型仓库的内容同步到 Mindreon，可以先在平台上创建模型，再拉取空工作区完成初始化，然后把外部模型文件下载进当前仓库并提交。
+
+例如同步魔搭社区模型：
+
+```bash
+mindreon install
+mindreon login
+mindreon create --model "qwen35-9b-sync" --description "sync from modelscope"
+mindreon connect --model "qwen35-9b-sync" --version "main"
+cd ./qwen35-9b-sync
+mindreon repo pull
+
+modelscope download --model Qwen/Qwen3.5-9B --local_dir ./model_dir
+
+mindreon repo add
+mindreon repo commit -m "sync Qwen/Qwen3.5-9B from ModelScope"
+mindreon repo push
+```
+
+例如同步 Hugging Face 模型：
+
+```bash
+mindreon install
+mindreon login
+mindreon create --model "qwen35-9b-hf-sync" --description "sync from huggingface"
+mindreon connect --model "qwen35-9b-hf-sync" --version "main"
+cd ./qwen35-9b-hf-sync
+mindreon repo pull
+
+huggingface-cli download Qwen/Qwen3.5-9B --local-dir ./model_dir
+
+mindreon repo add
+mindreon repo commit -m "sync Qwen/Qwen3.5-9B from Hugging Face"
+mindreon repo push
+```
+
+说明：
+
+- `mindreon repo pull` 这一步用于完成本地仓库初始化，确保后续下载的模型文件直接落在当前 Mindreon 工作区内
+- `modelscope download` 需要你本地已经安装 `modelscope`
+- `huggingface-cli download` 需要你本地已经安装 `huggingface-cli`；如果是私有模型，先执行 `huggingface-cli login`
+- 下载完成后，继续执行 `repo add / repo commit / repo push` 即可把模型文件同步到 Mindreon
 
 ## 资源创建
 

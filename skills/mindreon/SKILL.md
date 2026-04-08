@@ -57,7 +57,7 @@ mindreon dataset connect --name "my-test-data" --version "v1"
 连接成功后，在本地目录中执行：
 ```bash
 mindreon repo pull
-mindreon repo add                # 默认文件数超过 2000 时优先对顶层未追踪目录做 dvc add，否则单文件超过 5 MiB 走 dvc add
+mindreon repo add                # 默认文件数超过 1000 时优先对顶层未追踪目录做 dvc add，否则单文件超过 5 MiB 走 dvc add
 mindreon repo commit -m "update assets"
 mindreon repo push
 ```

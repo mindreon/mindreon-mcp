@@ -9,7 +9,7 @@ import { loadConfig } from "../cli/config.js";
 const INTERNAL_DIRS = new Set([".git", ".dvc"]);
 const ALWAYS_GIT_TRACK_FILES = new Set([".dvcignore", ".gitignore", ".gitattributes", ".gitmodules"]);
 const DEFAULT_THRESHOLD_MB = 5;
-const DEFAULT_FILE_COUNT_THRESHOLD = 2000;
+const DEFAULT_FILE_COUNT_THRESHOLD = 1000;
 const DEFAULT_DVC_CACHE_TYPE = "copy";
 const ROOT_DVC_GITIGNORE_VARIANTS = new Set([".dvc", ".dvc/", "/.dvc", "/.dvc/"]);
 

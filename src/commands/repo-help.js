@@ -8,7 +8,7 @@ Commands:
   status                        Show current workspace binding and git/dvc status
   pull                          Run git pull, refresh credentials, then dvc pull
   add [paths...] [--threshold N] [--count-threshold N]
-                                If tracked file count exceeds N, DVC-add top-level untracked dirs first (default: 2000)
+                                If tracked file count exceeds N, DVC-add top-level untracked dirs first (default: 1000)
                                 Otherwise auto-run dvc add for files >= N MiB, then git add (default: 5 MiB)
   commit -m <message>           Run git commit in the current workspace
   push                          Refresh credentials, run dvc push, then git push

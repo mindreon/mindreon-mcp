@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-import { ensureDvcConfig, saveWorkspaceCredentials } from "./workspace.js";
+import { ensureDvcConfig, parseFileCountThreshold, saveWorkspaceCredentials } from "./workspace.js";
 import { readIni } from "./ini.js";
 
 async function withTempWorkspace(fn) {
@@ -87,4 +87,9 @@ test("saveWorkspaceCredentials 覆盖旧的 config.local remote 凭证配置", a
             region: "us-east-1",
         });
     });
+});
+
+test("parseFileCountThreshold 默认返回 1000", () => {
+    assert.equal(parseFileCountThreshold(""), 1000);
+    assert.equal(parseFileCountThreshold(undefined), 1000);
 });
